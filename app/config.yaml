@@ -1,0 +1,44 @@
+manifest:
+  # --- Agents ---
+
+  platform-builder:
+    description: "Creates agents, teams, workflows, and schedules using the AgentOS Studio."
+    quick_prompts:
+      - "What can you build for me?"
+      - "Build an agent that tracks AI news and files a daily brief in the shared notebook"
+      - "Build a daily pulse workflow and schedule it for 9am"
+
+  platform-manager:
+    description: "Monitors and manages the AgentOS: usage, tokens, runs, tools, evals and schedules."
+    quick_prompts:
+      - "Is the platform healthy right now?"
+      - "How many runs and tokens over the last 7 days?"
+      - "Which agent is slowest, and is anything failing?"
+
+  platform-engineer:
+    description: "Answers codebase questions: reads the source code, explains the wiring, and generates handoffs for your coding agent."
+    quick_prompts:
+      - "How does learning work?"
+      - "How does tool offloading work?"
+      - "How does the agno team work?"
+
+  # --- Teams ---
+
+  agno:
+    description: "The platform lead. Agno can build agents, run them and check on the platform."
+    quick_prompts:
+      - "Tell me about yourself"
+      - "How do I get started?"
+      - "Let's build an agent"
+
+  # --- Workflows ---
+
+  deployment-check:
+    description: "Readiness check: database, credentials, auth, scheduler, MCP, Slack. No model calls."
+    quick_prompts:
+      - "Run the deployment check"
+
+  run-evals:
+    description: "Runs the eval cases tagged by EVALS_TAG (default: smoke). Disabled by default."
+    quick_prompts:
+      - "Run the eval suite (spends model calls)"
