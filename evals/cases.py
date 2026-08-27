@@ -29,11 +29,13 @@ from agno.eval import Case
 from agents.builder import platform_builder
 from agents.engineer import platform_engineer
 from agents.manager import platform_manager
+from agents.support_insights import support_insights
 
 # Re-exported for skills and entrypoints
 from evals.hooks import (  # noqa: F401
     BUILDER_HOOKS,
     LEARNING_HOOKS,
+    SUPPORT_INTERACTION_HOOKS,
     cleanup_new_builder_state,
     cleanup_new_components,
     cleanup_new_learning_state,
@@ -47,6 +49,7 @@ from evals.hooks import (  # noqa: F401
     snapshot_learning_state,
     snapshot_schedule_ids,
 )
+from teams.customer_support import customer_support_team
 from teams.lead import agno_team
 
 # When PARALLEL_API_KEY is set, Agno's web tools come from the Parallel SDK
@@ -282,5 +285,52 @@ CASES: tuple[Case, ...] = (
             "exists — a grounded no. Does not fabricate a run or its results, and does not silently "
             "build a new component to satisfy the ask (offering to build one is fine)."
         ),
+    ),
+    # Customer Support — typed, private team routing. Support post-hook rows are
+    # snapshot-scoped and removed after each case; the input never requests refunds.
+    Case(
+        name="customer_support_routes_tracking_email",
+        team=customer_support_team,
+        input=(
+            '{"message_id":"EMAIL-EVAL-TRACKING","from_email":"alice@example.test",'
+            '"subject":"Tracking request","body":"Please check ORD-LUMEN-1001."}'
+        ),
+        tags=("smoke", "release"),
+        timeout_seconds=90,
+        **SUPPORT_INTERACTION_HOOKS,
+        criteria=(
+            "Returns a valid concise English customer email reply for EMAIL-EVAL-TRACKING about only "
+            "the caller's ORD-LUMEN-1001 tracking state. It keeps taxonomy metadata out of the email body "
+            "and does not mention insights or another customer's order."
+        ),
+        expected_tool_calls=("lookup_order",),
+    ),
+    Case(
+        name="customer_support_grounds_product_facts_in_dedicated_catalog",
+        team=customer_support_team,
+        input=(
+            '{"message_id":"EMAIL-EVAL-PRODUCT","from_email":"carol@example.test",'
+            '"subject":"Mosslight Tee size","body":"What chest width is XL?"}'
+        ),
+        tags=("release",),
+        timeout_seconds=90,
+        **SUPPORT_INTERACTION_HOOKS,
+        criteria=(
+            "Returns a concise English customer email reply grounded in the dedicated catalog. It reports "
+            "the Mosslight Tee XL chest width as 58 cm and does not invent availability, order state, or insights."
+        ),
+        expected_tool_calls=("search_knowledge_base",),
+    ),
+    Case(
+        name="support_insights_reports_sql_derived_empty_period",
+        agent=support_insights,
+        input="Generate a support insights report for 2020-01-01 through 2020-01-02.",
+        tags=("release",),
+        timeout_seconds=90,
+        criteria=(
+            "Returns an InsightsReport for the requested period with zero interactions and no invented issue or "
+            "refund counts. It is an administrator report, not a customer email."
+        ),
+        expected_tool_calls=("get_support_insights",),
     ),
 )

@@ -229,6 +229,34 @@ If a case fails, run **`/eval-and-improve`** — it diagnoses each failure, fixe
 
 Because the repo is managed by coding agents, it moves fast. Run `/review-and-improve` before a release or after a refactor: it sweeps for drift between docs, code, and config, auto-fixes mechanical drift like stale paths and missing env vars, and flags anything bigger.
 
+### Inspect Customer Support HITL runs
+
+Before resuming an approved Customer Support Team HITL run, use its session ID to find the run ID and inspect the paused run. Replace `THREAD-REFUND-1004` with the relevant session ID; keep `<RUN_ID>` as the run ID returned by the first request.
+
+List runs for the session to identify the paused run and its ID ([list team runs](https://docs.agno.com/api-reference/teams/list-team-runs)):
+
+```bash
+curl -sS \
+  "http://localhost:8000/teams/customer-support/runs?session_id=THREAD-REFUND-1004" \
+  | jq
+```
+
+Retrieve that run's full details before resuming it ([get team run](https://docs.agno.com/api-reference/teams/get-team-run)):
+
+```bash
+curl -sS \
+  "http://localhost:8000/teams/customer-support/runs/<RUN_ID>?session_id=THREAD-REFUND-1004" \
+  | jq
+```
+
+If the session ID is unknown, list recent Customer Support Team sessions first:
+
+```bash
+curl -sS \
+  "http://localhost:8000/sessions?type=team&component_id=customer-support&limit=20" \
+  | jq
+```
+
 ## Connect more frontends (optional)
 
 AgentOS comes with an MCP server at `/mcp` (enabled by setting `mcp_server=True` in [`app/main.py`](app/main.py)), so any MCP client can call your agents, teams, and workflows through tools like `run_agent`, `run_team`, and `run_workflow`.

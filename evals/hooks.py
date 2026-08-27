@@ -27,8 +27,10 @@ from typing import Any
 from agno.eval import CaseResult
 from agno.run.base import RunStatus
 from agno.scheduler.manager import ScheduleManager
+from sqlalchemy import text
 
 from app.notes import notes
+from app.store import ensure_store_schema, get_store_repository
 from db import get_postgres_db
 
 # Eval DB instance (where results are stored)
@@ -260,3 +262,44 @@ async def cleanup_new_builder_state(pre_run: dict[str, Any], result: CaseResult)
 
 BUILDER_HOOKS: dict[str, Any] = {"setup": snapshot_builder_state, "teardown": cleanup_new_builder_state}
 LEARNING_HOOKS: dict[str, Any] = {"setup": snapshot_learning_state, "teardown": cleanup_new_learning_state}
+
+
+def snapshot_support_interactions() -> set[str]:
+    """Capture customer-support interaction keys before a model-backed support eval."""
+    repository = get_store_repository()
+    ensure_store_schema(repository.engine)
+    with repository.engine.connect() as connection:
+        rows = connection.execute(
+            text("SELECT record_key FROM store_records WHERE record_type = 'support_interaction'")
+        ).scalars()
+        return {str(key) for key in rows}
+
+
+def delete_new_support_interactions(pre_run_keys: set[str]) -> None:
+    """Delete only post-hook interactions created by the current support eval case."""
+    repository = get_store_repository()
+    with repository.engine.begin() as connection:
+        rows = connection.execute(
+            text("SELECT record_key FROM store_records WHERE record_type = 'support_interaction'")
+        ).scalars()
+        for key in rows:
+            if str(key) not in pre_run_keys:
+                connection.execute(
+                    text(
+                        "DELETE FROM store_records WHERE record_type = 'support_interaction' "
+                        "AND record_key = :record_key"
+                    ),
+                    {"record_key": key},
+                )
+
+
+async def cleanup_new_support_interactions(pre_run_keys: set[str], result: CaseResult) -> None:
+    """Allow a completed post-hook to commit, then remove its isolated interaction rows."""
+    await _let_inflight_writes_land(result)
+    await asyncio.to_thread(delete_new_support_interactions, pre_run_keys)
+
+
+SUPPORT_INTERACTION_HOOKS: dict[str, Any] = {
+    "setup": snapshot_support_interactions,
+    "teardown": cleanup_new_support_interactions,
+}

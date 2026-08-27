@@ -22,6 +22,13 @@ manifest:
       - "How does tool offloading work?"
       - "How does the agno team work?"
 
+  support-insights:
+    description: "Produces administrator-only, SQL-derived support issue reports on demand."
+    quick_prompts:
+      - "Generate a support insights report for the last 30 days"
+      - "Which products receive the most support questions?"
+      - "Summarize refund outcomes this month"
+
   # --- Teams ---
 
   agno:
@@ -30,6 +37,13 @@ manifest:
       - "Tell me about yourself"
       - "How do I get started?"
       - "Let's build an agent"
+
+  customer-support:
+    description: "Processes simulated customer emails with private order, product, and refund specialists."
+    quick_prompts:
+      - '{"message_id":"EMAIL-1001","from_email":"alice@example.test","subject":"Where is my order?","body":"Please check ORD-LUMEN-1001."}'
+      - '{"message_id":"EMAIL-1002","from_email":"bob@example.test","subject":"Refund request","body":"I need help with ORD-LUMEN-1002."}'
+      - '{"message_id":"EMAIL-1003","from_email":"carol@example.test","subject":"Product size","body":"What are the Mosslight Tee measurements?"}'
 
   # --- Workflows ---
 

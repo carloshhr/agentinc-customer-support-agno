@@ -1,0 +1,71 @@
+schema: spec-driven
+
+artifact_store:
+  mode: hybrid
+delivery:
+  strategy: single-pr
+  review_budget_lines: 800
+
+context: |
+  Tech stack: Python 3.14, Agno 3.0.0, FastAPI/AgentOS, PostgreSQL with pgvector.
+  Architecture: agents/, teams/, workflows/, app/, and db/ packages; AgentOS is configured in app/main.py.
+  Persistence: PostgreSQL stores sessions, learning, and application data; PgVector backs knowledge bases.
+  Quality: Ruff formats and lints; mypy type-checks; requirements are generated with uv.
+  Testing: Agno Case evals run through python -m evals; no conventional unit-test suite is currently configured.
+  Source plan: docs/customer-support-team-plan.md for the customer-support-team change.
+
+testing:
+  strict_tdd: true
+  detected_on: 2026-08-24
+  test_runner:
+    available: true
+    framework: Agno eval CLI
+    command: python -m evals --tag smoke
+  layers:
+    unit:
+      available: false
+      tool: null
+    integration:
+      available: true
+      tool: Agno Case evals against live PostgreSQL and model-backed AgentOS components
+    e2e:
+      available: false
+      tool: null
+  coverage:
+    available: false
+    command: null
+  quality:
+    linter: ruff check .
+    type_checker: mypy . --config-file pyproject.toml
+    formatter: ./scripts/format.sh
+  constraints:
+    - The eval suite requires configured PostgreSQL and model credentials and may incur model cost.
+    - Eval hooks clean up created state but must run while the platform has no competing writers.
+    - Add a deterministic Python unit-test runner before applying business-logic tasks for this change.
+
+rules:
+  proposal:
+    - Treat docs/customer-support-team-plan.md as the authoritative planned scope.
+    - Include rollback and data-migration considerations for PostgreSQL changes.
+  specs:
+    - Use RFC 2119 requirement language and Given/When/Then scenarios.
+    - Preserve the deterministic refund threshold and Human-in-the-Loop boundary from the source plan.
+  design:
+    - Document database, knowledge-base, approval, and idempotency boundaries.
+    - Keep operational support agents private to the customer-support team.
+  tasks:
+    - Group tasks by phase and keep each task completable in one session.
+    - Plan deterministic unit tests before business-logic implementation tasks.
+  apply:
+    guidelines:
+      - Follow existing AgentOS module and registration patterns.
+      - Use uv-based dependency and requirements workflows; do not use pip directly.
+    tdd: true
+    test_command: python -m evals --tag smoke
+  verify:
+    test_command: python -m evals --tag smoke
+    build_command: ./scripts/validate.sh
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.
+    - Preserve the archived change directory as the audit trail.

@@ -13,10 +13,14 @@ from agno.utils.log import log_info
 from agents.builder import platform_builder
 from agents.engineer import platform_engineer
 from agents.manager import platform_manager
+from agents.support_insights import support_insights
 from app.knowledge import shared_knowledge
 from app.registry import registry
 from app.schedules import register_schedules
+from app.store import ensure_store_schema
+from app.store_knowledge import store_knowledge
 from db import get_postgres_db
+from teams.customer_support import customer_support_team
 from teams.lead import agno_team
 from workflows.deployment_check import deployment_check
 from workflows.run_evals import run_evals
@@ -77,6 +81,8 @@ if MCP_CONNECT_SECRET:
 @asynccontextmanager
 async def lifespan(app):  # type: ignore[no-untyped-def]
     log_info("AgentOS lifespan: startup")
+    # Application-owned mock-store tables must exist before any schedule or run can use them.
+    ensure_store_schema()
     # Register schedules on startup. Idempotent and fail-soft.
     register_schedules()
     try:
@@ -98,9 +104,9 @@ agent_os = AgentOS(
     mcp_auth=mcp_auth,
     lifespan=lifespan,
     db=get_postgres_db(),
-    knowledge=[shared_knowledge],
-    agents=[platform_builder, platform_manager, platform_engineer],
-    teams=[agno_team],
+    knowledge=[shared_knowledge, store_knowledge],
+    agents=[support_insights, platform_builder, platform_manager, platform_engineer],
+    teams=[customer_support_team, agno_team],
     workflows=[deployment_check, run_evals],
     interfaces=interfaces,
     registry=registry,
