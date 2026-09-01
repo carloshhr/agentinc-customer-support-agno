@@ -9,6 +9,8 @@ from pathlib import Path
 
 from agno.os import AgentOS
 from agno.utils.log import log_info
+from fastapi import HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from agents.builder import platform_builder
 from agents.engineer import platform_engineer
@@ -19,6 +21,8 @@ from app.registry import registry
 from app.schedules import register_schedules
 from app.store import ensure_store_schema
 from app.store_knowledge import store_knowledge
+from app.support_inbox import router as support_inbox_router
+from app.support_inbox import support_inbox_asset, support_inbox_frontend
 from db import get_postgres_db
 from teams.customer_support import customer_support_team
 from teams.lead import agno_team
@@ -113,6 +117,26 @@ agent_os = AgentOS(
     config=str(Path(__file__).parent / "config.yaml"),
 )
 app = agent_os.get_app()
+app.include_router(support_inbox_router)
+# AgentOS installs its catch-all UI mount before application extensions. Keep the
+# narrowly scoped API router ahead of it so `/api/support/*` remains reachable.
+app.routes.insert(0, app.routes.pop())
+
+
+@app.middleware("http")
+async def serve_support_inbox(request: Request, call_next):  # type: ignore[no-untyped-def]
+    """Serve built inbox files before AgentOS's root UI mount handles the request."""
+    path = request.url.path
+    if path == "/support-inbox":
+        return RedirectResponse("/support-inbox/")
+    if path == "/support-inbox/":
+        return support_inbox_frontend()
+    if path.startswith("/support-inbox/assets/"):
+        try:
+            return support_inbox_asset(path.removeprefix("/support-inbox/assets/"))
+        except HTTPException as error:
+            return JSONResponse(status_code=error.status_code, content={"detail": error.detail})
+    return await call_next(request)
 
 
 if __name__ == "__main__":

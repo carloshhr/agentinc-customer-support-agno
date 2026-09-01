@@ -52,6 +52,46 @@ docker compose up -d --build
 
 Confirm your AgentOS is running at [http://localhost:8000/docs](http://localhost:8000/docs).
 
+### Customer Support Inbox
+
+The Customer Support Inbox is a local React/Vite frontend for reviewing persisted `customer-support` conversations and sending simulated customer emails through the existing AgentOS API. It does not expose internal run data or approval controls.
+
+**Quick path**
+
+| Item | Details |
+|---|---|
+| URL | [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox) when the built frontend is served by FastAPI |
+| Backend | The AgentOS API and PostgreSQL database must be running; start both with `docker compose up -d --build` from the repository root |
+| Data | The database must contain persisted `customer-support` team sessions and runs. The inbox does not seed support data automatically |
+| Actions | List conversations, open a conversation, view normalized Email or JSON data, send a simulated email or reply, and see whether a thread is completed, incomplete, or awaiting approval |
+
+**Run the frontend in development**
+
+From `frontend/support-inbox/`, install the pinned dependencies and start Vite:
+
+```sh
+cd frontend/support-inbox
+npm ci
+npm exec vite -- --host 127.0.0.1 --port 5173
+```
+
+This serves the SPA at [http://localhost:5173/support-inbox/](http://localhost:5173/support-inbox/). The current Vite configuration has no development proxy for `/api/support/*`; use the FastAPI-served build below for end-to-end inbox requests against the local API.
+
+**Build the frontend served by FastAPI**
+
+From `frontend/support-inbox/`, generate the static assets into `dist/`:
+
+```sh
+npm ci
+npm run build
+```
+
+The build uses the `/support-inbox/` base path. With the API running on port `8000`, open [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox); FastAPI redirects it to `/support-inbox/` and serves the generated `dist/` files.
+
+**Approval status**
+
+If sending an email starts an approval-gated support run, the inbox returns an `approval_pending` state and displays that the request is pending administrative review. The inbox intentionally has no approve, reject, or resume action; it only reports the state.
+
 ### Step 2: Connect the AgentOS UI
 
 1. Open [os.agno.com](https://os.agno.com?utm_source=github&utm_medium=example-repo&utm_campaign=agentos-railway&utm_content=agentos-railway&utm_term=railway) and sign in.

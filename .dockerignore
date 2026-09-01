@@ -36,6 +36,9 @@ tmp/
 .codex/
 
 # Node (local deploy-tooling installs — not part of the image)
-node_modules
+**/node_modules
 package.json
 package-lock.json
+frontend/support-inbox/tsconfig*.tsbuildinfo
+frontend/support-inbox/vite.config.js
+frontend/support-inbox/vite.config.d.ts
