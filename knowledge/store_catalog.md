@@ -3,18 +3,22 @@
 ## Emberwake Mug — PRD-EMBER-MUG
 
 Ceramic 350 ml mug with a matte ember-red glaze. Hand wash only; it is not microwave-safe.
+Unit price: $39.99 USD.
 
 ## Cloudweave Tote — PRD-CLOUD-TOTE
 
 Organic cotton tote with a 35 cm by 40 cm body and a 60 cm shoulder strap. Spot clean with cold water.
+Unit price: $24.00 USD.
 
 ## Mosslight Tee — PRD-MOSS-TEE
 
 Soft organic cotton tee, available in XS through XL. Chest widths are 46 cm, 49 cm, 52 cm, 55 cm, and 58 cm.
+Unit price: $28.00 USD.
 
 ## Solstice Journal — PRD-SOLSTICE-JOURNAL
 
 Hardcover journal with 160 recycled-paper pages and a ribbon marker. Available in midnight blue only.
+Unit price: $18.00 USD.
 
 ## Returns
 

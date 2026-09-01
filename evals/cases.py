@@ -322,6 +322,23 @@ CASES: tuple[Case, ...] = (
         expected_tool_calls=("search_knowledge_base",),
     ),
     Case(
+        name="customer_support_grounds_product_price_in_dedicated_catalog",
+        team=customer_support_team,
+        input=(
+            '{"message_id":"EMAIL-EVAL-PRICE","from_email":"carol@example.test",'
+            '"subject":"Cloudweave Tote price","body":"What is the unit price of the Cloudweave Tote?"}'
+        ),
+        tags=("release",),
+        timeout_seconds=90,
+        **SUPPORT_INTERACTION_HOOKS,
+        criteria=(
+            "Returns a concise English customer email reply grounded in the dedicated catalog. It reports "
+            "the Cloudweave Tote unit price as $24.00 USD and does not invent availability, order state, "
+            "or insights."
+        ),
+        expected_tool_calls=("search_knowledge_base",),
+    ),
+    Case(
         name="support_insights_reports_sql_derived_empty_period",
         agent=support_insights,
         input="Generate a support insights report for 2020-01-01 through 2020-01-02.",

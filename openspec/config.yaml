@@ -12,19 +12,19 @@ context: |
   Persistence: PostgreSQL stores sessions, learning, and application data; PgVector backs knowledge bases.
   Quality: Ruff formats and lints; mypy type-checks; requirements are generated with uv.
   Testing: Agno Case evals run through python -m evals; no conventional unit-test suite is currently configured.
-  Source plan: docs/customer-support-team-plan.md for the customer-support-team change.
+  Source plan: docs/customer-support-inbox-plan.md for the customer-support-inbox change.
 
 testing:
   strict_tdd: true
   detected_on: 2026-08-24
   test_runner:
     available: true
-    framework: Agno eval CLI
-    command: python -m evals --tag smoke
+    framework: pytest and Agno eval CLI
+    command: uv run --extra dev pytest tests/test_support_inbox.py -q
   layers:
     unit:
-      available: false
-      tool: null
+      available: true
+      tool: pytest
     integration:
       available: true
       tool: Agno Case evals against live PostgreSQL and model-backed AgentOS components
@@ -41,7 +41,7 @@ testing:
   constraints:
     - The eval suite requires configured PostgreSQL and model credentials and may incur model cost.
     - Eval hooks clean up created state but must run while the platform has no competing writers.
-    - Add a deterministic Python unit-test runner before applying business-logic tasks for this change.
+    - Use deterministic pytest and Vitest checks for inbox changes; run model-backed smoke evals only with an exclusive PostgreSQL writer window.
 
 rules:
   proposal:

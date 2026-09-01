@@ -1,6 +1,7 @@
 """Deterministic component, approval boundary, and public-registration coverage."""
 
 import os
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -363,6 +364,21 @@ def test_product_support_uses_only_dedicated_knowledge_and_no_learning() -> None
     assert product_support.knowledge is store_knowledge
     assert product_support.search_knowledge is True
     assert product_support.learning is None
+
+
+def test_store_catalog_declares_usd_unit_price_for_each_product() -> None:
+    catalog = (Path(__file__).parents[1] / "knowledge" / "store_catalog.md").read_text()
+
+    expected_prices = {
+        "PRD-EMBER-MUG": "$39.99 USD",
+        "PRD-CLOUD-TOTE": "$24.00 USD",
+        "PRD-MOSS-TEE": "$28.00 USD",
+        "PRD-SOLSTICE-JOURNAL": "$18.00 USD",
+    }
+
+    for product_id, price in expected_prices.items():
+        product_section = catalog[catalog.index(product_id) :]
+        assert price in product_section[:300]
 
 
 def test_only_public_support_surfaces_are_registered() -> None:
