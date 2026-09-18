@@ -117,6 +117,7 @@ agent_os = AgentOS(
     config=str(Path(__file__).parent / "config.yaml"),
 )
 app = agent_os.get_app()
+app.state.support_inbox_authorization_enabled = runtime_env != "dev"
 app.include_router(support_inbox_router)
 # AgentOS installs its catch-all UI mount before application extensions. Keep the
 # narrowly scoped API router ahead of it so `/api/support/*` remains reachable.

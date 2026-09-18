@@ -1,4 +1,11 @@
-"""Safe Customer Support inbox DTOs and browser API."""
+"""Safe Customer Support inbox DTOs and browser API.
+
+The Support Inbox routes use a principal-plus-scope dependency as a fallback
+for custom-route authorization. Agno 3.0.0 does not thread custom mappings
+through ``AgentOS`` construction, while its auth middleware does authenticate
+service-account PATs and populate ``request.state`` with the verified
+principal and scopes.
+"""
 
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -9,9 +16,9 @@ from typing import Literal
 from agno.db.base import SessionType
 from agno.run.base import RunStatus
 from agno.run.team import TeamRunOutput
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, Response
-from pydantic import BaseModel, Field, model_serializer
+from pydantic import BaseModel, field_validator, model_serializer
 
 from app.support_models import CustomerEmail, CustomerEmailReply
 from db import get_postgres_db
@@ -21,6 +28,23 @@ router = APIRouter(tags=["support-inbox"])
 frontend_directory = Path(__file__).parent.parent / "frontend" / "support-inbox" / "dist"
 
 ThreadStatus = Literal["completed", "approval_pending", "incomplete"]
+SUPPORT_INBOX_BFF_PRINCIPAL = "sa:support-inbox-bff"
+SUPPORT_INBOX_READ_SCOPE = "support_inbox:read"
+SUPPORT_INBOX_SEND_SCOPE = "support_inbox:send"
+
+
+def support_inbox_authorization(required_scope: str):
+    """Require the designated BFF principal and one route-specific scope."""
+
+    async def dependency(request: Request) -> None:
+        if not getattr(request.app.state, "support_inbox_authorization_enabled", False):
+            return
+        principal = getattr(request.state, "user_id", None)
+        scopes = getattr(request.state, "scopes", [])
+        if principal != SUPPORT_INBOX_BFF_PRINCIPAL or required_scope not in scopes:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+
+    return dependency
 
 
 class ThreadSummary(BaseModel):
@@ -86,7 +110,12 @@ class ThreadList(BaseModel):
 class SupportEmailRequest(CustomerEmail):
     """Browser send contract with a required canonical support session ID."""
 
-    thread_id: str = Field(min_length=1, max_length=128)
+    @field_validator("thread_id")
+    @classmethod
+    def require_thread_id(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("thread_id is required")
+        return value
 
 
 class PendingSend(BaseModel):
@@ -109,8 +138,14 @@ def _frontend_asset(asset_path: str) -> Path:
 
 
 def support_inbox_frontend() -> HTMLResponse:
-    """Serve the built SPA through the existing FastAPI process."""
-    return HTMLResponse((frontend_directory / "index.html").read_text())
+    """Serve the root-built SPA under the legacy AgentOS support path."""
+    html = (frontend_directory / "index.html").read_text()
+    # The independent frontend is built at `/`, while legacy hosting exposes it
+    # beneath `/support-inbox/`. Rewrite only the generated root asset references;
+    # the external deployment continues to use the unmodified build output.
+    html = html.replace('src="/assets/', 'src="/support-inbox/assets/')
+    html = html.replace('href="/assets/', 'href="/support-inbox/assets/')
+    return HTMLResponse(html)
 
 
 def support_inbox_asset(asset_path: str) -> Response:
@@ -128,14 +163,14 @@ def _customer_email(run: TeamRunOutput) -> CustomerEmail | None:
     input_content = run.input.input_content if run.input else None
     try:
         return CustomerEmail.model_validate(input_content)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):  # fmt: skip
         return None
 
 
 def _customer_reply(run: TeamRunOutput) -> CustomerEmailReply | None:
     try:
         return CustomerEmailReply.model_validate(run.content)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):  # fmt: skip
         return None
 
 
@@ -155,7 +190,9 @@ def _thread_status(runs: list[TeamRunOutput]) -> ThreadStatus:
 
 def _support_runs(runs: Sequence[object]) -> list[TeamRunOutput]:
     """Keep only typed persisted runs that belong to Customer Support."""
-    return [run for run in runs if isinstance(run, TeamRunOutput) and run.team_id == "customer-support"]
+    return [
+        run for run in runs if isinstance(run, TeamRunOutput) and getattr(run, "team_id", None) == "customer-support"
+    ]
 
 
 def map_thread(session_id: str, runs: Sequence[object]) -> ThreadDetail | None:
@@ -234,7 +271,11 @@ def _summary(detail: ThreadDetail) -> ThreadSummary:
     )
 
 
-@router.get("/api/support/threads", response_model=ThreadList)
+@router.get(
+    "/api/support/threads",
+    response_model=ThreadList,
+    dependencies=[Depends(support_inbox_authorization(SUPPORT_INBOX_READ_SCOPE))],
+)
 def list_threads() -> ThreadList:
     """Return safely mappable Customer Support threads, newest first."""
     return ThreadList(
@@ -244,7 +285,11 @@ def list_threads() -> ThreadList:
     )
 
 
-@router.get("/api/support/threads/{session_id}", response_model=ThreadDetail)
+@router.get(
+    "/api/support/threads/{session_id}",
+    response_model=ThreadDetail,
+    dependencies=[Depends(support_inbox_authorization(SUPPORT_INBOX_READ_SCOPE))],
+)
 def get_thread(session_id: str) -> ThreadDetail:
     """Return one safely mappable thread, never a raw session or run."""
     for detail in _read_threads():
@@ -253,11 +298,18 @@ def get_thread(session_id: str) -> ThreadDetail:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Support thread not found")
 
 
-@router.post("/api/support/emails", response_model=ThreadDetail | PendingSend)
+@router.post(
+    "/api/support/emails",
+    response_model=ThreadDetail | PendingSend,
+    dependencies=[Depends(support_inbox_authorization(SUPPORT_INBOX_SEND_SCOPE))],
+)
 async def send_email(request: SupportEmailRequest):
     """Run one validated simulated email using its thread ID as the session ID."""
     try:
-        result = await customer_support_team.arun(request, session_id=request.thread_id)
+        session_id = request.thread_id
+        if session_id is None:
+            raise ValueError("thread_id is required")
+        result = await customer_support_team.arun(request, session_id=session_id)
         if not isinstance(result, TeamRunOutput):
             raise TypeError("Customer Support did not return a team run")
         if result.status is RunStatus.paused:
@@ -266,7 +318,7 @@ async def send_email(request: SupportEmailRequest):
         for detail in _read_threads():
             if detail.session_id == request.thread_id:
                 return detail
-        fallback_detail = map_thread(request.thread_id, [result])
+        fallback_detail = map_thread(session_id, [result])
         if fallback_detail is None:
             raise ValueError("Customer Support result could not be mapped")
         return fallback_detail

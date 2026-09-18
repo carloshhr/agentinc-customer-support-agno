@@ -1,0 +1,32 @@
+name: Support Inbox BFF
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ai
+          POSTGRES_PASSWORD: ai
+          POSTGRES_DB: ai
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ai -d ai"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: support-inbox/bff
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --extra dev
+      - run: uv run pytest tests -q
+      - run: uv run pytest tests/test_migrations_postgres.py -q
+        env:
+          BFF_POSTGRES_URL: postgresql+psycopg://ai:ai@localhost:5432/ai
+      - run: uv run ruff check app tests retention.py migrations
+      - run: uv run mypy app retention.py

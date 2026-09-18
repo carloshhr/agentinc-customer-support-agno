@@ -6,10 +6,13 @@ from typing import Any, cast
 os.environ.setdefault("RUNTIME_ENV", "dev")
 
 from agno.models.response import ToolExecution
+from agno.os.middleware.jwt import AuthMiddleware
+from agno.os.service_accounts import ServiceAccount, ServiceAccountVerification, VerificationStatus
 from agno.run.base import RunStatus
 from agno.run.requirement import RunRequirement
 from agno.run.team import TeamRunInput, TeamRunOutput
 from agno.session.team import TeamSession
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
@@ -72,7 +75,20 @@ def test_mapper_allow_lists_only_customer_support_email_fields() -> None:
     payload = detail[0].model_dump_json()
     assert detail[0].status == "completed"
     assert [message.direction for message in detail[0].messages] == ["inbound", "outbound"]
-    for forbidden in ("private output", "private_tool", "private reasoning", "APR-1001", "secret", "requirements"):
+    for forbidden in (
+        "private output",
+        "private_tool",
+        "private reasoning",
+        "APR-1001",
+        "secret",
+        "requirements",
+        "ORDER-PRIVATE",
+        "PRODUCT-PRIVATE",
+        "member_responses",
+        "tool_args",
+        "reasoning_content",
+        "approval_id",
+    ):
         assert forbidden not in payload
 
 
@@ -283,3 +299,92 @@ def test_fastapi_serves_only_safe_inbox_paths_and_base_path_assets() -> None:
     assert asset.status_code == 200
     assert traversal.status_code == 404
     assert inbox_paths == ["/api/support/threads", "/api/support/threads/{session_id}", "/api/support/emails"]
+
+
+class _SupportAccountVerifier:
+    def __init__(self) -> None:
+        self.accounts = {
+            "agno_pat_unrelated": ServiceAccount(
+                id="unrelated",
+                name="other-service",
+                token_hash="hash",
+                token_prefix="agno_pat_",
+                scopes=["support_inbox:read"],
+            ),
+            "agno_pat_read_only": ServiceAccount(
+                id="read-only",
+                name="support-inbox-bff",
+                token_hash="hash",
+                token_prefix="agno_pat_",
+                scopes=["support_inbox:read"],
+            ),
+            "agno_pat_send_only": ServiceAccount(
+                id="send-only",
+                name="support-inbox-bff",
+                token_hash="hash",
+                token_prefix="agno_pat_",
+                scopes=["support_inbox:send"],
+            ),
+            "agno_pat_scoped": ServiceAccount(
+                id="scoped",
+                name="support-inbox-bff",
+                token_hash="hash",
+                token_prefix="agno_pat_",
+                scopes=["support_inbox:read", "support_inbox:send"],
+            ),
+        }
+
+    async def verify(self, token: str, client_key: str | None = None) -> ServiceAccountVerification:
+        account = self.accounts.get(token)
+        if account is None:
+            return ServiceAccountVerification(status=VerificationStatus.INVALID)
+        return ServiceAccountVerification(status=VerificationStatus.OK, account=account)
+
+
+def _production_support_app() -> FastAPI:
+    production_app = FastAPI()
+    production_app.state.support_inbox_authorization_enabled = True
+    production_app.include_router(support_inbox_router)
+    production_app.add_middleware(
+        AuthMiddleware,
+        authorization=False,
+        security_key="not-a-support-pat",
+        service_account_verifier=cast(Any, _SupportAccountVerifier()),
+    )
+    return production_app
+
+
+def test_production_support_routes_enforce_bff_credential_matrix(monkeypatch) -> None:
+    monkeypatch.setattr("app.support_inbox._read_threads", lambda: map_threads(_sessions()))
+    client = TestClient(_production_support_app(), base_url="http://127.0.0.1:8000")
+    cases = (
+        (None, 401),
+        ("Bearer invalid", 401),
+        ("Bearer agno_pat_unrelated", 403),
+        ("Bearer agno_pat_send_only", 403),
+        ("Bearer agno_pat_scoped", 200),
+    )
+
+    for authorization, expected_status in cases:
+        headers = {} if authorization is None else {"Authorization": authorization}
+        response = client.get("/api/support/threads", headers=headers)
+        assert response.status_code == expected_status
+
+
+def test_production_support_send_requires_send_scope_and_returns_safe_pending_dto(monkeypatch) -> None:
+    monkeypatch.setattr("app.support_inbox.customer_support_team.arun", _paused_run)
+    client = TestClient(_production_support_app(), base_url="http://127.0.0.1:8000")
+    payload = {
+        "thread_id": "THREAD-1001",
+        "message_id": "EMAIL-1001",
+        "from_email": "alice@example.test",
+        "subject": "Refund",
+        "body": "Please refund my order.",
+    }
+
+    denied = client.post("/api/support/emails", headers={"Authorization": "Bearer agno_pat_read_only"}, json=payload)
+    allowed = client.post("/api/support/emails", headers={"Authorization": "Bearer agno_pat_scoped"}, json=payload)
+
+    assert denied.status_code == 403
+    assert allowed.status_code == 202
+    assert allowed.json() == {"session_id": "THREAD-1001", "run_id": "RUN-1001", "status": "approval_pending"}

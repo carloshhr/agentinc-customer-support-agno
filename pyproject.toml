@@ -43,4 +43,4 @@ no_implicit_optional = true
 warn_unused_configs = true
 plugins = ["pydantic.mypy"]
 # tmp/ is untracked scratch space — never part of the validated tree.
-exclude = [".venv*", "tmp"]
+exclude = [".venv*", "tmp", "^support-inbox/bff/"]

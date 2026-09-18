@@ -1,0 +1,1 @@
+"""Support Inbox BFF application."""
