@@ -34,8 +34,16 @@ Add a dedicated `demo` eval selection for the model-backed **Customer Support Ag
   - Evidence: exactly four existing cases gained `demo`; all retain `release`, tracking retains `smoke`, and hooks, rubrics, inputs, timeouts, expected tools, workflow defaults, and schedules are unchanged.
   - Checks: exact case/tag inventory and `--list` passed, including parent spot check; deterministic support/eval-hook tests passed (44 tests); Ruff and mypy passed; documentation distinction passed; independent hunk inspection confirmed tag-only case changes.
   - Commit evidence: recorded in work-unit commit `eval: add Customer Support demo tag`.
+- [x] Correct unsupported Product Support elaboration found by the demo gate.
+  - Route: inline because diagnosis identified one instruction-only change in `agents/product_support.py`; the eval rubric and catalog fixture remain unchanged.
+  - Failure evidence: the price response retrieved and stated the correct `$24.00 USD` price but invented unsupported availability/variant/regional-pricing/promotion details.
+  - Fix: Product Support now reports only needed facts explicitly supported by the retrieved passage and does not infer availability, variants, regional pricing, promotions, or discounts.
+  - Checks: Ruff format/lint, mypy, static case selection, and 41 focused tests passed; independent semantic diff verification passed; the explicitly authorized single-case run passed judge and reliability in 54.904s with the expected knowledge tool and no unsupported facts.
+  - Cleanup: `customer-support:EMAIL-EVAL-PRICE` was absent before and after the single-case run, proving its interaction was cleaned up.
+  - Commit evidence: recorded in work-unit commit `fix: keep product answers catalog-grounded`.
 - [ ] Run the model-backed demo eval gate when explicitly authorized.
   - Route: delegated to `gentle-ai-verify` with the exact `python -m evals --tag demo` command.
+  - First-run evidence: tracking, product facts, and Support Insights passed; product price failed while reliability passed. Cleanup output was not emitted, so hook cleanup remains unknown.
   - Safety: run only when no other writer is adding support interactions because case hooks snapshot and sweep newly created rows.
   - Commit evidence: not applicable unless the run reveals a required source fix.
 
