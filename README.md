@@ -121,9 +121,12 @@ Run evals from a host venv:
 ```sh
 ./scripts/venv_setup.sh && source .venv/bin/activate
 python -m evals --tag smoke
+python -m evals --tag demo
 python -m evals --tag release
 python -m evals --name <case>
 ```
+
+`python -m evals --tag demo` is the model-backed portfolio gate for Customer Support and operator-facing Support Insights. It is distinct from the deterministic, model-free seeded Support Inbox walkthrough, which displays fixed local threads without running eval cases.
 
 The daily run-evals schedule ships disabled because it incurs model calls. Enable it from the AgentOS UI only when that recurring cost and its shared-store implications are appropriate.
 

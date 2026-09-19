@@ -295,7 +295,7 @@ CASES: tuple[Case, ...] = (
             '{"message_id":"EMAIL-EVAL-TRACKING","from_email":"alice@example.test",'
             '"subject":"Tracking request","body":"Please check ORD-LUMEN-1001."}'
         ),
-        tags=("smoke", "release"),
+        tags=("smoke", "release", "demo"),
         timeout_seconds=90,
         **SUPPORT_INTERACTION_HOOKS,
         criteria=(
@@ -312,7 +312,7 @@ CASES: tuple[Case, ...] = (
             '{"message_id":"EMAIL-EVAL-PRODUCT","from_email":"carol@example.test",'
             '"subject":"Mosslight Tee size","body":"What chest width is XL?"}'
         ),
-        tags=("release",),
+        tags=("release", "demo"),
         timeout_seconds=90,
         **SUPPORT_INTERACTION_HOOKS,
         criteria=(
@@ -328,7 +328,7 @@ CASES: tuple[Case, ...] = (
             '{"message_id":"EMAIL-EVAL-PRICE","from_email":"carol@example.test",'
             '"subject":"Cloudweave Tote price","body":"What is the unit price of the Cloudweave Tote?"}'
         ),
-        tags=("release",),
+        tags=("release", "demo"),
         timeout_seconds=90,
         **SUPPORT_INTERACTION_HOOKS,
         criteria=(
@@ -342,7 +342,7 @@ CASES: tuple[Case, ...] = (
         name="support_insights_reports_sql_derived_empty_period",
         agent=support_insights,
         input="Generate a support insights report for 2020-01-01 through 2020-01-02.",
-        tags=("release",),
+        tags=("release", "demo"),
         timeout_seconds=90,
         criteria=(
             "Returns an InsightsReport for the requested period with zero interactions and no invented issue or "

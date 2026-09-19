@@ -4,6 +4,7 @@ Run Evals
 
 python -m evals                         # run all cases (concise UI)
 python -m evals --tag smoke             # run a tagged subset
+python -m evals --tag demo              # run the model-backed Customer Support portfolio gate
 python -m evals --name <case>           # run one case
 python -m evals --tag smoke --list      # show what a tag selects, spending nothing
 python -m evals --timeout 180           # per-case clock for cases that set none (120s)
