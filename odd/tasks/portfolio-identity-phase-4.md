@@ -43,10 +43,12 @@ Present the repository as **Customer Support AgentOS**, a recruiter-ready multi-
   - Checks: `git diff --check` (including parent spot check), portfolio terminology/local-link validation, and project-first README ordering all passed.
   - Evidence: README now leads with Customer Support AgentOS, the deterministic Support Inbox demo, private specialists, and the read-only approval boundary; recruiter-demo terminology and seeded-state capture guidance align. Independent verification confirmed that essential setup, security, MCP, Studio, and Railway guidance remain present.
   - Commit evidence: recorded in work-unit commit `docs: make customer support the portfolio focus`.
-- [ ] Refine the visible runtime catalog for the Customer Support showcase.
-  - Route: inline if the final YAML change is bounded to descriptions, ordering, and quick prompts in `app/config.yaml`; delegate if broader changes become necessary.
-  - Checks: YAML parse, `./scripts/validate.sh`, and `pytest -q tests/test_customer_support_integration.py tests/test_support_demo.py`.
-  - Commit evidence: pending.
+- [x] Refine the visible runtime catalog for the Customer Support showcase.
+  - Route: inline because the change stayed bounded to descriptions, ordering, and quick prompts in `app/config.yaml`.
+  - Evidence: `customer-support` and administrator-only `support-insights` now lead the manifest; all eight component IDs remain unchanged and all Customer Support quick prompts parse as JSON.
+  - Checks: YAML/JSON parse passed, including parent spot check; focused integration/demo tests passed (24 tests); Ruff format and lint passed; protected implementation paths remained unchanged.
+  - Known baseline failure: mypy still reports the unchanged `tests/test_support_demo.py:61` optional `session_id` diagnostic; independent verification confirmed it is the only validation failure and is outside this candidate diff.
+  - Commit evidence: recorded in work-unit commit `feat: lead the catalog with customer support`.
 
 ## Evidence
 

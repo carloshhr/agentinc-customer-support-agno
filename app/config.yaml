@@ -1,58 +1,87 @@
+---
 manifest:
-  # --- Agents ---
+  # --- Portfolio showcase ---
+
+  customer-support:
+    description: >-
+      Public Customer Support team that routes simulated emails to private
+      order, product, and refund specialists.
+    quick_prompts:
+      - >-
+        {"message_id":"EMAIL-1001","from_email":"alice@example.test",
+        "subject":"Where is my order?","body":"Please check ORD-LUMEN-1001."}
+      - >-
+        {"message_id":"EMAIL-1003","from_email":"carol@example.test",
+        "subject":"Product size",
+        "body":"What are the Mosslight Tee measurements?"}
+      - >-
+        {"message_id":"EMAIL-1002","from_email":"bob@example.test",
+        "subject":"Refund request",
+        "body":"I need help with ORD-LUMEN-1002."}
+
+  support-insights:
+    description: >-
+      Administrator-only agent for SQL-derived support trends and outcome
+      reports; separate from Support Inbox.
+    quick_prompts:
+      - "Generate a support insights report for the last 30 days"
+      - "Which products receive the most support questions?"
+      - "Summarize refund outcomes this month"
+
+  # --- Platform team ---
+
+  agno:
+    description: >-
+      The platform lead. Agno can build agents, run them and check on the
+      platform.
+    quick_prompts:
+      - "Tell me about yourself"
+      - "How do I get started?"
+      - "Let's build an agent"
+
+  # --- Platform agents ---
 
   platform-builder:
-    description: "Creates agents, teams, workflows, and schedules using the AgentOS Studio."
+    description: >-
+      Creates agents, teams, workflows, and schedules using the AgentOS
+      Studio.
     quick_prompts:
       - "What can you build for me?"
-      - "Build an agent that tracks AI news and files a daily brief in the shared notebook"
+      - >-
+        Build an agent that tracks AI news and files a daily brief in the
+        shared notebook
       - "Build a daily pulse workflow and schedule it for 9am"
 
   platform-manager:
-    description: "Monitors and manages the AgentOS: usage, tokens, runs, tools, evals and schedules."
+    description: >-
+      Monitors and manages the AgentOS: usage, tokens, runs, tools, evals and
+      schedules.
     quick_prompts:
       - "Is the platform healthy right now?"
       - "How many runs and tokens over the last 7 days?"
       - "Which agent is slowest, and is anything failing?"
 
   platform-engineer:
-    description: "Answers codebase questions: reads the source code, explains the wiring, and generates handoffs for your coding agent."
+    description: >-
+      Answers codebase questions: reads the source code, explains the wiring,
+      and generates handoffs for your coding agent.
     quick_prompts:
       - "How does learning work?"
       - "How does tool offloading work?"
       - "How does the agno team work?"
 
-  support-insights:
-    description: "Produces administrator-only, SQL-derived support issue reports on demand."
-    quick_prompts:
-      - "Generate a support insights report for the last 30 days"
-      - "Which products receive the most support questions?"
-      - "Summarize refund outcomes this month"
-
-  # --- Teams ---
-
-  agno:
-    description: "The platform lead. Agno can build agents, run them and check on the platform."
-    quick_prompts:
-      - "Tell me about yourself"
-      - "How do I get started?"
-      - "Let's build an agent"
-
-  customer-support:
-    description: "Processes simulated customer emails with private order, product, and refund specialists."
-    quick_prompts:
-      - '{"message_id":"EMAIL-1001","from_email":"alice@example.test","subject":"Where is my order?","body":"Please check ORD-LUMEN-1001."}'
-      - '{"message_id":"EMAIL-1002","from_email":"bob@example.test","subject":"Refund request","body":"I need help with ORD-LUMEN-1002."}'
-      - '{"message_id":"EMAIL-1003","from_email":"carol@example.test","subject":"Product size","body":"What are the Mosslight Tee measurements?"}'
-
   # --- Workflows ---
 
   deployment-check:
-    description: "Readiness check: database, credentials, auth, scheduler, MCP, Slack. No model calls."
+    description: >-
+      Readiness check: database, credentials, auth, scheduler, MCP, Slack. No
+      model calls.
     quick_prompts:
       - "Run the deployment check"
 
   run-evals:
-    description: "Runs the eval cases tagged by EVALS_TAG (default: smoke). Disabled by default."
+    description: >-
+      Runs the eval cases tagged by EVALS_TAG (default: smoke). Disabled by
+      default.
     quick_prompts:
       - "Run the eval suite (spends model calls)"
