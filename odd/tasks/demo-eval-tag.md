@@ -48,15 +48,16 @@ Add a dedicated `demo` eval selection for the model-backed **Customer Support Ag
   - Checks: `ruff format --check`, `ruff check`, and `mypy` passed for `teams/customer_support.py`, including parent spot check; 41 focused deterministic tests passed; independent semantic diff verification passed; the explicitly authorized price eval passed judge and reliability in 29.316s with a price-only response.
   - Cleanup: `customer-support:EMAIL-EVAL-PRICE` was absent before and after the single-case run.
   - Commit evidence: recorded in work-unit commit `fix: keep support replies question-focused`.
-- [ ] Run the model-backed demo eval gate when explicitly authorized.
-  - Route: delegated to `gentle-ai-verify` with the exact `python -m evals --tag demo` command.
-  - Run evidence: both full demo attempts passed tracking, product facts, and Support Insights; product price failed while reliability passed. All three interaction keys were absent before and after the latest run, confirming cleanup.
+- [x] Run the model-backed demo eval gate when explicitly authorized.
+  - Route: delegated to `gentle-ai-verify` with one exact `python -m evals --tag demo` execution after both grounding fixes.
+  - Final evidence: all four cases passed judge and reliability in 132.436s; the machine-readable result at `/tmp/customer-support-demo-evals-closed.json` reports 4 passed and 0 failed, confirmed by parent spot check.
+  - Cleanup: tracking, product, and price interaction keys were absent before and after the run; no cleanup/refusal errors or repository artifacts appeared.
   - Safety: run only when no other writer is adding support interactions because case hooks snapshot and sweep newly created rows.
-  - Commit evidence: not applicable unless the run reveals a required source fix.
+  - Commit evidence: recorded in work-unit commit `docs: record the demo eval gate`.
 
 ## Evidence
 
 - The focused selection contains exactly four existing cases: `customer_support_routes_tracking_email`, `customer_support_grounds_product_facts_in_dedicated_catalog`, `customer_support_grounds_product_price_in_dedicated_catalog`, and `support_insights_reports_sql_derived_empty_period`.
 - The three Customer Support cases retain `SUPPORT_INTERACTION_HOOKS`; Support Insights remains a separate operator-facing report case with no interaction cleanup hook.
-- The cancelled release-eval attempt did not return a completion/cleanup report, so the eventual focused run must report hook cleanup status explicitly.
+- The earlier cancelled release-eval attempt did not return a completion report, but subsequent focused and final demo runs confirmed their attributable interaction keys were absent before and after execution.
 - Engram remains unavailable because the local memory provider reports an ownership mismatch; this task file is the recovery source.
