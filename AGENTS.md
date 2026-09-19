@@ -227,6 +227,12 @@ Invoke a skill by name (`/extend-agent`) or just describe the task — Claude Co
 | `DB_DRIVER` | no | `postgresql+psycopg` | SQLAlchemy driver. |
 | `AGNO_DEBUG` | no | `False` | If `True`, agno emits verbose debug logs. Compose sets this for dev. |
 | `WAIT_FOR_DB` | no | `False` | If `True`, the entrypoint blocks on the DB before starting. Compose sets this. |
+| `SUPPORT_DB_USER` / `SUPPORT_DB_PASSWORD` / `SUPPORT_DB_NAME` | deployment | compose local defaults | Separate Support Inbox PostgreSQL credentials and database name. |
+| `SUPPORT_OPERATOR_USERNAME` / `SUPPORT_OPERATOR_PASSWORD` / `SUPPORT_OPERATOR_DISPLAY_NAME` | deployment | compose local defaults | Separate Support Inbox operator seed identity; override outside local Compose. |
+| `DATABASE_URL` / `AGENTOS_BASE_URL` / `AGENTOS_PAT` | deployment | compose local wiring | BFF database connection, AgentOS service URL, and service-account token; set deployment-specific values. |
+| `SUPPORT_ALLOWED_ORIGINS` / `SUPPORT_COOKIE_SECURE` / `SUPPORT_COOKIE_NAME` | deployment | compose local wiring | BFF browser-origin and session-cookie boundary; use deployment-specific secure settings. |
+
+Support Inbox owns this separate BFF/operator/database boundary rather than the Customer Support AgentOS team configuration. Compose supplies local-only wiring; deployments provide their own values without copying local defaults.
 
 ## Ports
 

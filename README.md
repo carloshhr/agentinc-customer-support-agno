@@ -220,6 +220,12 @@ railway logs --service agent-os
 | `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASS` / `DB_DATABASE` | no | compose defaults | PostgreSQL connection settings. |
 | `DB_DRIVER` | no | `postgresql+psycopg` | SQLAlchemy driver. |
 | `AGNO_DEBUG` / `WAIT_FOR_DB` | no | `False` | Debug logging and startup DB wait controls. |
+| `SUPPORT_DB_USER` / `SUPPORT_DB_PASSWORD` / `SUPPORT_DB_NAME` | deployment | compose local defaults | Separate Support Inbox PostgreSQL credentials and database name. |
+| `SUPPORT_OPERATOR_USERNAME` / `SUPPORT_OPERATOR_PASSWORD` / `SUPPORT_OPERATOR_DISPLAY_NAME` | deployment | compose local defaults | Separate Support Inbox operator seed identity; override outside local Compose. |
+| `DATABASE_URL` / `AGENTOS_BASE_URL` / `AGENTOS_PAT` | deployment | compose local wiring | BFF database connection, AgentOS service URL, and service-account token; set deployment-specific values. |
+| `SUPPORT_ALLOWED_ORIGINS` / `SUPPORT_COOKIE_SECURE` / `SUPPORT_COOKIE_NAME` | deployment | compose local wiring | BFF browser-origin and session-cookie boundary; use deployment-specific secure settings. |
+
+Support Inbox uses this separate BFF/operator/database boundary; these variables do not configure the Customer Support AgentOS team itself. Compose supplies local-only wiring, while deployments must provide their own values without copying local defaults.
 
 Keep secrets out of source control. `MCP_CONNECT_SECRET` must be at least 16 characters; `AGENTOS_MCP_SIGNING_KEY` must be high entropy and at least 32 characters. In production, service-account and JWT scopes should grant only the operations a caller needs.
 

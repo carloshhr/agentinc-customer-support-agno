@@ -37,11 +37,12 @@ The user selected **Public-ready complete**:
   - Evidence: the test now asserts each optional `session_id` is present before constructing the same `TeamSession` inputs.
   - Checks: focused Support demo tests passed (2 tests); affected-file mypy passed, including parent spot check; full Ruff and mypy validation passed for 47 files; independent verification found no production-path changes.
   - Commit evidence: recorded in work-unit commit `test: narrow support demo session ids`.
-- [ ] Correct public environment and eval-skill inventory drift.
+- [x] Correct public environment and eval-skill inventory drift.
   - Route: delegated to `gentle-ai-worker` because the work spans `example.env`, public docs, and a coding-agent skill.
   - Skills: `review-and-improve`, `cognitive-doc-design`.
-  - Checks: env-variable coverage, skill links/frontmatter, Markdown/local-link validation, and diff check.
-  - Commit evidence: pending.
+  - Evidence: `example.env`, `README.md`, and `AGENTS.md` now inventory all 12 separate Support Inbox BFF/operator/database variables without values; the eval skill names Customer Support and Support Insights alongside reference coverage.
+  - Checks: `git diff --check` passed; env-variable coverage (including parent spot check), runtime-source name matching, eval-skill wording, and Markdown/local-link validation passed; independent verification confirmed all entries are unique, commented, and value-free.
+  - Commit evidence: recorded in work-unit commit `docs: document support inbox deployment settings`.
 - [ ] Update the contributor architecture source of truth.
   - Route: delegated to `gentle-ai-worker` because `AGENTS.md` is a large, cross-cutting public architecture document.
   - Skills: `review-and-improve`, `cognitive-doc-design`.
