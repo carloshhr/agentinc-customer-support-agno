@@ -41,9 +41,16 @@ Add a dedicated `demo` eval selection for the model-backed **Customer Support Ag
   - Checks: Ruff format/lint, mypy, static case selection, and 41 focused tests passed; independent semantic diff verification passed; the explicitly authorized single-case run passed judge and reliability in 54.904s with the expected knowledge tool and no unsupported facts.
   - Cleanup: `customer-support:EMAIL-EVAL-PRICE` was absent before and after the single-case run, proving its interaction was cleaned up.
   - Commit evidence: recorded in work-unit commit `fix: keep product answers catalog-grounded`.
+- [x] Constrain Customer Support synthesis to the requested specialist facts.
+  - Route: inline because the final-gate response proves the coordinating team reintroduced unrequested product claims after Product Support retrieval.
+  - Failure evidence: the final reply added variant/pricing/promotion absences and offered order help even though the customer asked only for unit price; the isolated specialist-grounding fix had passed.
+  - Fix: Customer Support now directs product replies to answer only the customer's actual question with needed Product Support facts and forbids sales or order-help offers and volunteered absent-variant, regional-price, promotion, discount, or availability claims.
+  - Checks: `ruff format --check`, `ruff check`, and `mypy` passed for `teams/customer_support.py`, including parent spot check; 41 focused deterministic tests passed; independent semantic diff verification passed; the explicitly authorized price eval passed judge and reliability in 29.316s with a price-only response.
+  - Cleanup: `customer-support:EMAIL-EVAL-PRICE` was absent before and after the single-case run.
+  - Commit evidence: recorded in work-unit commit `fix: keep support replies question-focused`.
 - [ ] Run the model-backed demo eval gate when explicitly authorized.
   - Route: delegated to `gentle-ai-verify` with the exact `python -m evals --tag demo` command.
-  - First-run evidence: tracking, product facts, and Support Insights passed; product price failed while reliability passed. Cleanup output was not emitted, so hook cleanup remains unknown.
+  - Run evidence: both full demo attempts passed tracking, product facts, and Support Insights; product price failed while reliability passed. All three interaction keys were absent before and after the latest run, confirming cleanup.
   - Safety: run only when no other writer is adding support interactions because case hooks snapshot and sweep newly created rows.
   - Commit evidence: not applicable unless the run reveals a required source fix.
 
