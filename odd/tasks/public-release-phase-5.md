@@ -46,13 +46,19 @@ The user selected **Public-ready complete**:
 - [x] Update the contributor architecture source of truth.
   - Route: delegated to `gentle-ai-worker` because `AGENTS.md` is a large, cross-cutting public architecture document.
   - Skills: `review-and-improve`, `cognitive-doc-design`.
-  - Evidence: `AGENTS.md` now identifies Customer Support as the public showcase team; lists its three private specialists, the bounded Support Inbox/BFF surface, separate administrator-only Support Insights, and the retained Agno control plane; it also distinguishes learning/offload holders from public registrations and private specialists.
+  - Evidence: `AGENTS.md` now identifies Customer Support as the public showcase team; lists its three private specialists, the bounded Support Inbox/BFF surface, separate Support Insights, and the retained Agno control plane; it also distinguishes learning/offload holders from public registrations and private specialists.
   - Checks: `git diff --check -- AGENTS.md odd/tasks/public-release-phase-5.md` passed, including parent spot check; Customer Support architecture/key-file inventory passed; AGENTS local links passed; stale four-component population claims were removed; independent verification confirmed the source-backed public/private/control-plane boundaries and targeted diff.
-  - Release-gate note: Support Insights is described and instructed as administrator-only, but this documentation work unit did not prove a runtime authorization guard; verify or qualify that claim in the final gate.
   - Commit evidence: recorded in work-unit commit `docs: update the contributor architecture map`.
+- [x] Qualify Support Insights as operator-facing rather than access-enforced administrator-only.
+  - Route: delegated to `gentle-ai-worker` because the correction spans public docs, runtime catalog/prompt wording, a model contract docstring, and the canonical specification.
+  - Decision: the user selected `operator-facing` because runtime inspection found no Support-Insights-specific administrator authorization guard; deployment-wide AgentOS agent-run authorization remains the actual access boundary.
+  - Evidence: current public/runtime/spec wording now describes Support Insights as a separate operator-facing reporting and validation surface, excludes it from Support Inbox and customer email replies, and does not imply a component-specific ACL; deterministic SQL reporting behavior, tools, storage, registration, and tests remain unchanged.
+  - Checks: targeted `git diff --check` passed; stale-claim scan passed, including parent spot check; manifest parse passed; focused Support tests passed (24 tests); full Ruff and mypy validation passed (70 formatted files, 47 source files); independent verification confirmed registration, tools, model, report schema, and deterministic spec behavior remained unchanged.
+  - Commit evidence: recorded in work-unit commit `docs: clarify Support Insights access boundary`.
 - [ ] Run the no-cost public-release gate and report checks still requiring authorization.
   - Route: delegated to `gentle-ai-verify` for repository-wide read-only checks.
   - Checks: Git hygiene, tracked local artifacts, local links/symlinks, component listings, formatting, validation, focused tests, and frontend/BFF checks that do not call models.
+  - Evidence so far: root validation, 61 root tests, 37 BFF tests with 1 skipped, 20 frontend tests, links, live component population, catalog order, and hosted asset rewriting all passed after correcting two gate-command assumptions.
   - Commit evidence: pending if the gate requires no further fixes.
 
 ## Evidence

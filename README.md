@@ -36,7 +36,7 @@ For the exact walkthrough and honest capture guidance, see [the recruiter demo g
 - **Private specialists:** **Order Support**, **Product Support**, and **Returns & Refunds Support** hold their focused support responsibilities behind the team.
 - **Support Inbox and BFF boundary:** the local React inbox talks to its dedicated BFF, which exposes only the customer-safe inbox operations. It is not an administrative console.
 - **Deterministic seed:** three typed synthetic inbox threads are created when missing, giving a repeatable review path before anyone submits a live email.
-- **Separate Support Insights:** **Support Insights** is an administrator-only validation surface. It is deliberately separate from Support Inbox and is not part of the customer-facing demo.
+- **Separate Support Insights:** **Support Insights** is a separate operator-facing reporting and validation surface. It is deliberately separate from Support Inbox and is not part of the customer-facing demo; access follows deployment-wide AgentOS agent-run authorization, not a component-specific administrator role.
 
 ## The deterministic Support Inbox demo
 

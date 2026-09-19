@@ -21,8 +21,8 @@ manifest:
 
   support-insights:
     description: >-
-      Administrator-only agent for SQL-derived support trends and outcome
-      reports; separate from Support Inbox.
+      Operator-facing agent for SQL-derived support trends and outcome reports;
+      separate from Support Inbox.
     quick_prompts:
       - "Generate a support insights report for the last 30 days"
       - "Which products receive the most support questions?"

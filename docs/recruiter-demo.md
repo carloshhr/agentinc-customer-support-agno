@@ -2,7 +2,7 @@
 
 This local portfolio demo shows the public **Customer Support AgentOS** experience through Support Inbox. It seeds synthetic, typed inbox threads during AgentOS startup; the seed does not call a model, tools, or the product knowledge base.
 
-Support Inbox is a customer-safe surface, not an administration console. **Support Insights** remains separate and administrator-only.
+Support Inbox is a customer-safe surface, not an administration console. **Support Insights** remains separate as an operator-facing reporting and validation surface.
 
 ## Start the demo
 
@@ -42,7 +42,7 @@ The seed only creates missing fixed demo sessions. It never replaces, merges, or
 - The public Customer Support team routes each request to a private specialist.
 - Support Inbox supports compose, reply, manual refresh, and retry for simulated customer conversations.
 - The refund state is intentionally read-only: Support Inbox cannot approve, reject, resume, or otherwise administer a request.
-- **Support Insights** is a distinct, administrator-only validation surface and is not part of this inbox walkthrough.
+- **Support Insights** is a distinct operator-facing reporting and validation surface and is not part of this inbox walkthrough.
 
 ## Capture portfolio visuals
 
