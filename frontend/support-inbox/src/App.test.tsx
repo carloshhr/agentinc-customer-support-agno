@@ -106,13 +106,43 @@ describe('Support Inbox', () => {
     expect(screen.queryByText('Loading threads…')).toBeNull()
   })
 
-  it('shows a safe request-failure message when loading the inbox fails', async () => {
-    listThreads.mockRejectedValue(new Error('network unavailable'))
+  it('retries a failed inbox load from the visible retry action', async () => {
+    listThreads.mockRejectedValueOnce(new Error('network unavailable')).mockResolvedValueOnce({
+      threads: [{ session_id: 'THREAD-1001', subject: 'Order help', customer_email: 'alice@example.test', preview: 'Please help', last_message_at: '2026-08-27T10:00:00Z', status: 'completed' }],
+    })
 
     render(<App />)
 
     expect(await screen.findByRole('alert')).toHaveTextContent('The inbox could not be loaded.')
-    expect(screen.queryByText('Loading threads…')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Retry inbox' }))
+
+    expect(await screen.findByText('Order help')).toBeInTheDocument()
+    expect(listThreads).toHaveBeenCalledTimes(2)
+  })
+
+  it('refreshes the inbox and selected thread with the existing APIs', async () => {
+    render(<App />)
+    await screen.findByText('Order help')
+    fireEvent.click(screen.getByText('Order help'))
+    await screen.findByRole('region', { name: 'Thread detail' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh inbox and selected thread' }))
+
+    await waitFor(() => expect(listThreads).toHaveBeenCalledTimes(2))
+    expect(getThread).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries a failed selected thread load', async () => {
+    getThread.mockRejectedValueOnce(new Error('network unavailable')).mockResolvedValueOnce(detail)
+    render(<App />)
+    await screen.findByText('Order help')
+
+    fireEvent.click(screen.getByText('Order help'))
+    expect(await screen.findByRole('alert')).toHaveTextContent('This thread could not be loaded.')
+    fireEvent.click(screen.getByRole('button', { name: 'Retry thread' }))
+
+    expect(await screen.findByRole('region', { name: 'Thread detail' })).toBeInTheDocument()
+    expect(getThread).toHaveBeenCalledTimes(2)
   })
 
   it('selects a thread, renders model content as text, and exposes exactly Email and JSON tabs', async () => {
@@ -170,6 +200,25 @@ describe('Support Inbox', () => {
     expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled()
   })
 
+  it('explains specialist routing and compose versus reply behavior', async () => {
+    render(<App />)
+
+    expect(await screen.findByText(/Customer Support routes requests to Order Support, Product Support, and Returns & Refunds Support/)).toBeInTheDocument()
+    expect(screen.getByText(/Compose creates a new simulated customer thread; Reply continues the selected thread/)).toBeInTheDocument()
+  })
+
+  it('renders approval pending as an administrative read-only state without continuation controls', async () => {
+    listThreads.mockResolvedValue({ threads: [{ session_id: 'THREAD-1001', subject: 'Order help', customer_email: 'alice@example.test', preview: 'Please help', last_message_at: '2026-08-27T10:00:00Z', status: 'approval_pending' }] })
+    getThread.mockResolvedValue({ ...detail, status: 'approval_pending' })
+    render(<App />)
+    await screen.findByText('Awaiting administrative review')
+    fireEvent.click(screen.getByText('Order help'))
+
+    expect(await screen.findByText('Awaiting administrative review')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Reply' })).toBeNull()
+    expect(screen.queryByText(/resume|approve|reject/i)).toBeNull()
+  })
+
   it('shows a safe pending notice without a continuation control', async () => {
     sendEmail.mockResolvedValue({ session_id: 'THREAD-1001', run_id: 'RUN-1001', status: 'approval_pending' })
     render(<App />)
@@ -177,7 +226,7 @@ describe('Support Inbox', () => {
     fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'Refund' } })
     fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Please refund this.' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send simulated email' }))
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('pending administrative review'))
-    expect(screen.queryByText(/resume|approve/i)).toBeNull()
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Awaiting administrative review'))
+    expect(screen.queryByText(/resume|approve|reject/i)).toBeNull()
   })
 })
