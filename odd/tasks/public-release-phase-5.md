@@ -43,11 +43,13 @@ The user selected **Public-ready complete**:
   - Evidence: `example.env`, `README.md`, and `AGENTS.md` now inventory all 12 separate Support Inbox BFF/operator/database variables without values; the eval skill names Customer Support and Support Insights alongside reference coverage.
   - Checks: `git diff --check` passed; env-variable coverage (including parent spot check), runtime-source name matching, eval-skill wording, and Markdown/local-link validation passed; independent verification confirmed all entries are unique, commented, and value-free.
   - Commit evidence: recorded in work-unit commit `docs: document support inbox deployment settings`.
-- [ ] Update the contributor architecture source of truth.
+- [x] Update the contributor architecture source of truth.
   - Route: delegated to `gentle-ai-worker` because `AGENTS.md` is a large, cross-cutting public architecture document.
   - Skills: `review-and-improve`, `cognitive-doc-design`.
-  - Checks: registered component/manifest consistency, key-file path validation, architecture terminology, and diff check.
-  - Commit evidence: pending.
+  - Evidence: `AGENTS.md` now identifies Customer Support as the public showcase team; lists its three private specialists, the bounded Support Inbox/BFF surface, separate administrator-only Support Insights, and the retained Agno control plane; it also distinguishes learning/offload holders from public registrations and private specialists.
+  - Checks: `git diff --check -- AGENTS.md odd/tasks/public-release-phase-5.md` passed, including parent spot check; Customer Support architecture/key-file inventory passed; AGENTS local links passed; stale four-component population claims were removed; independent verification confirmed the source-backed public/private/control-plane boundaries and targeted diff.
+  - Release-gate note: Support Insights is described and instructed as administrator-only, but this documentation work unit did not prove a runtime authorization guard; verify or qualify that claim in the final gate.
+  - Commit evidence: recorded in work-unit commit `docs: update the contributor architecture map`.
 - [ ] Run the no-cost public-release gate and report checks still requiring authorization.
   - Route: delegated to `gentle-ai-verify` for repository-wide read-only checks.
   - Checks: Git hygiene, tracked local artifacts, local links/symlinks, component listings, formatting, validation, focused tests, and frontend/BFF checks that do not call models.
@@ -56,8 +58,7 @@ The user selected **Public-ready complete**:
 ## Evidence
 
 - Read-only mapping confirmed that all registered code agents, teams, and workflows have source modules and manifest entries.
-- `AGENTS.md` still omits Customer Support, its private specialists, Support Insights, Support Inbox, and support persistence from its architecture/key-file model.
-- `example.env` omits the separate Support Inbox/BFF environment inventory.
-- `.agents/skills/create-evals/SKILL.md` incorrectly says the committed eval suite covers only reference components.
-- The sole current validation failure is the unchanged `tests/test_support_demo.py:61` optional `session_id` mypy diagnostic; Ruff and 24 focused Customer Support tests pass.
+- The contributor architecture now includes Customer Support, its private specialists, Support Insights, Support Inbox/BFF, and deterministic support-demo persistence.
+- The public environment inventory now includes the separate Support Inbox/BFF boundary, and the eval-authoring skill names current committed coverage.
+- The prior `tests/test_support_demo.py:61` mypy diagnostic is fixed without production behavior changes; full Ruff and mypy validation passes.
 - Engram remains unavailable because the local memory provider reports an ownership mismatch; this task file is the recovery source.
