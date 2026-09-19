@@ -21,6 +21,7 @@ from app.registry import registry
 from app.schedules import register_schedules
 from app.store import ensure_store_schema
 from app.store_knowledge import store_knowledge
+from app.support_demo import seed_support_demo_threads
 from app.support_inbox import router as support_inbox_router
 from app.support_inbox import support_inbox_asset, support_inbox_frontend
 from db import get_postgres_db
@@ -67,7 +68,7 @@ MCP_CONNECT_SECRET = getenv("MCP_CONNECT_SECRET", "")
 
 mcp_auth = None
 if MCP_CONNECT_SECRET:
-    from agno.os import AgentOSBuiltinAuth
+    from agno.os.mcp_auth_builtin import AgentOSBuiltinAuth
 
     mcp_auth = AgentOSBuiltinAuth(
         url=agentos_url,
@@ -87,6 +88,8 @@ async def lifespan(app):  # type: ignore[no-untyped-def]
     log_info("AgentOS lifespan: startup")
     # Application-owned mock-store tables must exist before any schedule or run can use them.
     ensure_store_schema()
+    # Fixed, typed demo threads make the local inbox inspectable without a model call.
+    seed_support_demo_threads()
     # Register schedules on startup. Idempotent and fail-soft.
     register_schedules()
     try:
