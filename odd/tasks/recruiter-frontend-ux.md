@@ -35,10 +35,12 @@ Make the local Customer Support demo immediately understandable to recruiters by
   - Checks: `cd frontend/support-inbox && npm test` (20 passed, including parent spot check); `cd frontend/support-inbox && VITE_SUPPORT_API_ORIGIN=http://localhost:8001 npm run build` (passed); `git diff --check -- frontend/support-inbox odd/tasks/recruiter-frontend-ux.md` (passed).
   - Independent verification confirmed the behavior and identified the regenerated hashed assets that must be included with `dist/index.html`; the complete asset set is part of this work unit.
   - Commit evidence: recorded in work-unit commit `feat: improve recruiter support inbox UX`.
-- [ ] Rewrite the README entry path for recruiters and distinguish Support Inbox from Support Insights.
+- [x] Rewrite the README entry path for recruiters and distinguish Support Inbox from Support Insights.
   - Route: inline after the frontend behavior and wording are verified; this is one bounded documentation file.
-  - Checks: README structural readback and `git diff --check`.
-  - Commit evidence: pending.
+  - Evidence: README links to `docs/recruiter-demo.md`, documents seeded threads, specialist routing, compose/reply, manual refresh/retry, and the read-only administrative-review state; it identifies Support Insights as separate and administrator-only.
+  - Checks: `git diff --check -- README.md odd/tasks/recruiter-frontend-ux.md` (passed, including parent spot check); required recruiter README terms check (passed).
+  - Independent verification passed after confirming JSX `&amp;` renders the same visible specialist label documented in the README; 20 frontend tests passed and protected implementation paths remained unchanged.
+  - Commit evidence: recorded in work-unit commit `docs: make the README recruiter-first`.
 
 ## Evidence
 

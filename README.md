@@ -52,18 +52,29 @@ docker compose up -d --build
 
 Confirm your AgentOS is running at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-### Customer Support Inbox
+### Recruiter demo: Customer Support Inbox
 
-The Customer Support Inbox is a local React/Vite frontend for reviewing persisted `customer-support` conversations and sending simulated customer emails through the existing AgentOS API. It does not expose internal run data or approval controls.
+The Customer Support Inbox is a local React/Vite frontend for reviewing `customer-support` conversations and sending simulated customer emails through the existing AgentOS API. It is a customer-facing demo surface: it does not expose internal run data or administrative approval controls. For the complete walkthrough and seeded scenarios, see the [local recruiter demo guide](docs/recruiter-demo.md).
 
 **Quick path**
 
-| Item | Details |
-| --- | --- |
-| URL | [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox) when the built frontend is served by FastAPI |
-| Backend | Start the AgentOS API, dedicated Support Inbox PostgreSQL, migrations, and BFF with the Compose flow below |
-| Data | The database must contain persisted `customer-support` team sessions and runs. The inbox does not seed support data automatically |
-| Actions | List conversations, open a conversation, view normalized Email or JSON data, send a simulated email or reply, and see whether a thread is completed, incomplete, or awaiting approval |
+1. Start the local stack:
+
+   ```sh
+   docker compose up -d --build agentos-api support-inbox-db support-inbox-migrate support-inbox-bff
+   ```
+
+2. Open [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox) and sign in with the local-only account below.
+3. The deterministic demo seed creates three synthetic inbox threads during AgentOS startup, so the demo is ready to review immediately.
+
+**What to show**
+
+- **Specialist routing:** Customer Support routes requests to **Order Support**, **Product Support**, or **Returns & Refunds Support**, depending on whether the customer needs order status, product help, or a return/refund.
+- **Compose versus reply:** **Compose** starts a new simulated customer thread. **Reply** continues the currently selected thread, preserving its conversation context.
+- **Recoverable reads:** Use the manual **Refresh** action to request the latest inbox data. If loading the inbox or a conversation detail fails, use its **Retry** action; the inbox does not poll or refresh in the background.
+- **Approval boundary:** A paused refund request displays **Awaiting administrative review**. This is read-only: Support Inbox cannot approve, reject, resume, or otherwise administer the request.
+
+**Support Inbox is not Support Insights.** Support Inbox is the customer-safe recruiter demo described here. **Support Insights** is a separate, administrator-only agent; its controls and responsibilities remain outside this inbox.
 
 **Run the local Compose stack**
 
