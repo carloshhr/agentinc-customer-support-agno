@@ -55,11 +55,12 @@ The user selected **Public-ready complete**:
   - Evidence: current public/runtime/spec wording now describes Support Insights as a separate operator-facing reporting and validation surface, excludes it from Support Inbox and customer email replies, and does not imply a component-specific ACL; deterministic SQL reporting behavior, tools, storage, registration, and tests remain unchanged.
   - Checks: targeted `git diff --check` passed; stale-claim scan passed, including parent spot check; manifest parse passed; focused Support tests passed (24 tests); full Ruff and mypy validation passed (70 formatted files, 47 source files); independent verification confirmed registration, tools, model, report schema, and deterministic spec behavior remained unchanged.
   - Commit evidence: recorded in work-unit commit `docs: clarify Support Insights access boundary`.
-- [ ] Run the no-cost public-release gate and report checks still requiring authorization.
+- [x] Run the no-cost public-release gate and report checks still requiring authorization.
   - Route: delegated to `gentle-ai-verify` for repository-wide read-only checks.
   - Checks: Git hygiene, tracked local artifacts, local links/symlinks, component listings, formatting, validation, focused tests, and frontend/BFF checks that do not call models.
-  - Evidence so far: root validation, 61 root tests, 37 BFF tests with 1 skipped, 20 frontend tests, links, live component population, catalog order, and hosted asset rewriting all passed after correcting two gate-command assumptions.
-  - Commit evidence: pending if the gate requires no further fixes.
+  - Evidence: all 14 authorized checks passed, including parent Git/diff spot check; Ruff and mypy passed; 118 tests passed with 1 BFF test skipped; local Markdown links, skills symlink, live component population, committed catalog boundary, Support Inbox assets, and Support Insights wording all passed.
+  - Intentionally not run: builds, MCP smoke, release evals, and a post-wording container restart require separate authorization or were unnecessary for this no-cost gate.
+  - Commit evidence: recorded in work-unit commit `docs: record the public release gate`.
 
 ## Evidence
 
