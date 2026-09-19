@@ -1,10 +1,12 @@
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import httpx
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
@@ -114,7 +116,8 @@ def test_fake_agentos_server_preserves_pending_and_never_returns_pat() -> None:
 
     def fake_agentos(request: httpx.Request) -> httpx.Response:
         seen.append(dict(request.headers))
-        payloads.append(request.read() and __import__("json").loads(request.content))
+        request.read()
+        payloads.append(cast(dict[str, str], json.loads(request.content)))
         return httpx.Response(202, json={"session_id": "s-1", "run_id": "r-1", "status": "approval_pending"})
 
     client = AgentOSClient("https://agent-os.test", "agno_pat_server_only", httpx.MockTransport(fake_agentos))
@@ -199,7 +202,7 @@ def test_send_validates_agentos_pending_dto() -> None:
 
 
 def test_send_audits_the_browser_thread_id() -> None:
-    from app import support
+    import app.support as support
 
     audits: list[dict[str, str]] = []
 
@@ -228,7 +231,7 @@ def test_send_audits_the_browser_thread_id() -> None:
                 subject="Reply",
                 body="Hello",
             ),
-            request,
+            cast(Request, request),
             Response(),
         )
     finally:
@@ -269,7 +272,7 @@ def test_agentos_client_has_explicit_limits_and_rejects_oversized_payloads() -> 
         "https://agent-os.test", "pat", httpx.MockTransport(lambda _: httpx.Response(200, text="x" * 2_000_000))
     )
     assert client.timeout.connect == 2
-    assert client.timeout.read == 5
+    assert client.timeout.read == 90
     assert client.timeout.write == 5
     assert client.timeout.pool == 2
     try:

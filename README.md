@@ -59,11 +59,21 @@ The Customer Support Inbox is a local React/Vite frontend for reviewing persiste
 **Quick path**
 
 | Item | Details |
-|---|---|
+| --- | --- |
 | URL | [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox) when the built frontend is served by FastAPI |
-| Backend | The AgentOS API and PostgreSQL database must be running; start both with `docker compose up -d --build` from the repository root |
+| Backend | Start the AgentOS API, dedicated Support Inbox PostgreSQL, migrations, and BFF with the Compose flow below |
 | Data | The database must contain persisted `customer-support` team sessions and runs. The inbox does not seed support data automatically |
 | Actions | List conversations, open a conversation, view normalized Email or JSON data, send a simulated email or reply, and see whether a thread is completed, incomplete, or awaiting approval |
+
+**Run the local Compose stack**
+
+From the repository root, start the AgentOS API and the dedicated Support Inbox services:
+
+```sh
+docker compose up -d --build agentos-api support-inbox-db support-inbox-migrate support-inbox-bff
+```
+
+Compose waits for PostgreSQL, applies the Support Inbox migrations, and seeds one local-only operator before starting the BFF at [http://localhost:8001](http://localhost:8001). The default local-only credentials are username `local.operator` and password `local-support-password`; override `SUPPORT_OPERATOR_USERNAME`, `SUPPORT_OPERATOR_PASSWORD`, and `SUPPORT_OPERATOR_DISPLAY_NAME` in your shell or `.env` for local development. Never use these defaults outside local development. Existing operators are not overwritten by the seed.
 
 **Run the frontend in development**
 
@@ -83,10 +93,12 @@ From `frontend/support-inbox/`, generate the static assets into `dist/`:
 
 ```sh
 npm ci
-npm run build
+VITE_SUPPORT_API_ORIGIN=http://localhost:8001 npm run build
 ```
 
-The build uses the `/support-inbox/` base path. With the API running on port `8000`, open [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox); FastAPI redirects it to `/support-inbox/` and serves the generated `dist/` files.
+`VITE_SUPPORT_API_ORIGIN` is a build-time variable, not a runtime setting. Always include it when rebuilding `dist/`; otherwise the bundle has no BFF URL and the UI displays `Support service is temporarily unavailable.` even when the BFF is running. The Compose BFF listens on port `8001` and allows the browser origin `http://localhost:8000`.
+
+The build uses the `/support-inbox/` base path. With the Compose stack running, open [http://localhost:8000/support-inbox](http://localhost:8000/support-inbox); FastAPI redirects it to `/support-inbox/` and serves the generated `dist/` files. After rebuilding, use a hard refresh (`Cmd+Shift+R` on macOS) to discard the previous bundle.
 
 **Approval status**
 
@@ -318,7 +330,7 @@ can you access my agentos mcp?
 ## Environment variables
 
 | Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
+| ---------- | ---------- | --------- | ------------- |
 | `OPENAI_API_KEY` | yes | none | OpenAI key for models and embeddings. |
 | `RUNTIME_ENV` | no | `prd` | `dev` disables JWT. Compose sets this to `dev` for local — never put it in an env file that syncs to Railway, or production deploys unauthenticated. |
 | `JWT_VERIFICATION_KEY` | prd | none | Public key from os.agno.com. Required when `RUNTIME_ENV=prd`, unless `JWT_JWKS_FILE` is set. |

@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 from .schemas import PendingSend, SendResult, ThreadDetail, ThreadList, ThreadSummary, validate_thread_summary
 
 MAX_RESPONSE_BYTES = 1_000_000
-UPSTREAM_TIMEOUT = httpx.Timeout(connect=2.0, read=5.0, write=5.0, pool=2.0)
+UPSTREAM_TIMEOUT = httpx.Timeout(connect=2.0, read=90, write=5.0, pool=2.0)
 
 
 class AgentOSClient:
@@ -28,7 +28,13 @@ class AgentOSClient:
 
     def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         try:
-            response = self._client.request(method, path, headers={"Authorization": f"Bearer {self.pat}"}, **kwargs)
+            headers = {"Authorization": f"Bearer {self.pat}"} if self.pat else {}
+            response = self._client.request(
+                method,
+                path,
+                headers=headers,
+                **kwargs,
+            )
         except httpx.TimeoutException as exc:
             raise HTTPException(504, "Support service unavailable") from exc
         except httpx.HTTPError as exc:

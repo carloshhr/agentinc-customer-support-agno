@@ -92,7 +92,7 @@ def login(payload: LoginRequest, request: Request, response: Response) -> LoginR
         token,
         httponly=True,
         secure=request.app.state.settings.cookie_secure,
-        samesite="none",
+        samesite="none" if request.app.state.settings.cookie_secure else "lax",
         path="/",
     )
     response.headers["Cache-Control"] = "no-store"

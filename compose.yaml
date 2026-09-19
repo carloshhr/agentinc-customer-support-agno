@@ -49,8 +49,83 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  support-inbox-db:
+    image: postgres:16
+    container_name: support-inbox-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${SUPPORT_DB_USER:-support_inbox}
+      POSTGRES_PASSWORD: ${SUPPORT_DB_PASSWORD:-support_inbox}
+      POSTGRES_DB: ${SUPPORT_DB_NAME:-support_inbox}
+    volumes:
+      - support_inbox_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - agentos
+
+  support-inbox-migrate:
+    build:
+      context: ./support-inbox/bff
+      dockerfile: Dockerfile
+    container_name: support-inbox-migrate
+    restart: "no"
+    environment:
+      PYTHONPATH: /service
+      DATABASE_URL: postgresql+psycopg://${SUPPORT_DB_USER:-support_inbox}:${SUPPORT_DB_PASSWORD:-support_inbox}@support-inbox-db:5432/${SUPPORT_DB_NAME:-support_inbox}
+      SUPPORT_OPERATOR_USERNAME: ${SUPPORT_OPERATOR_USERNAME:-local.operator}
+      SUPPORT_OPERATOR_PASSWORD: ${SUPPORT_OPERATOR_PASSWORD:-local-support-password}
+      SUPPORT_OPERATOR_DISPLAY_NAME: ${SUPPORT_OPERATOR_DISPLAY_NAME:-Local Support Operator}
+    command: >
+      sh -c "alembic upgrade head && python -m app.seed_operator"
+    depends_on:
+      support-inbox-db:
+        condition: service_healthy
+    networks:
+      - agentos
+
+  support-inbox-bff:
+    build:
+      context: ./support-inbox/bff
+      dockerfile: Dockerfile
+    container_name: support-inbox-bff
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      RUNTIME_ENV: dev
+      DATABASE_URL: postgresql+psycopg://${SUPPORT_DB_USER:-support_inbox}:${SUPPORT_DB_PASSWORD:-support_inbox}@support-inbox-db:5432/${SUPPORT_DB_NAME:-support_inbox}
+      AGENTOS_BASE_URL: http://agentos-api:8000
+      AGENTOS_PAT: ${AGENTOS_PAT:-}
+      SUPPORT_ALLOWED_ORIGINS: http://localhost:8000
+      SUPPORT_COOKIE_SECURE: "false"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      support-inbox-db:
+        condition: service_healthy
+      support-inbox-migrate:
+        condition: service_completed_successfully
+      agentos-api:
+        condition: service_started
+    networks:
+      - agentos
+
 networks:
   agentos:
 
 volumes:
   pgdata:
+  support_inbox_pgdata:

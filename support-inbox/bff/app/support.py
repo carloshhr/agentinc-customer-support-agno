@@ -48,7 +48,7 @@ def threads(
         _audit(request, operator, "proxy.threads", "failure", {})
         raise
     _audit(request, operator, "proxy.threads", "success", {})
-    return result
+    return ThreadList(threads=result)
 
 
 @router.get("/threads/{session_id}", response_model=ThreadDetail)
