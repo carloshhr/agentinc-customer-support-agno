@@ -55,16 +55,18 @@ def test_demo_runs_are_safe_and_mappable() -> None:
     assert runs[-1].member_responses in (None, [])
     assert runs[-1].reasoning_content is None
 
-    details = map_threads(
-        [
+    sessions = []
+    for run in runs:
+        assert run.session_id is not None
+        sessions.append(
             TeamSession(
                 session_id=run.session_id,
                 team_id="customer-support",
                 runs=[run],
             )
-            for run in runs
-        ]
-    )
+        )
+
+    details = map_threads(sessions)
 
     assert [detail.session_id for detail in details] == [
         "DEMO-SUPPORT-TRACKING-001",
