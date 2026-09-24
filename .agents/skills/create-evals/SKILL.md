@@ -7,7 +7,7 @@ description: Author eval coverage for an agent in this AgentOS — map what the 
 
 > _**Coding-agent workflow** — a `/slash-command` your coding agent (Claude Code, Codex, others) runs while developing this repo. Invoke it by name (e.g. `/create-evals`) or describe the task and it triggers automatically._
 
-You're giving an agent eval coverage: turning what it promises into `Case` entries in [`evals/cases.py`](../../../evals/cases.py). The template's own cases cover the reference components only — an agent the user built is invisible to the suite until this skill writes one.
+You're giving an agent eval coverage: turning what it promises into `Case` entries in [`evals/cases.py`](../../../evals/cases.py). The committed suite covers the reference components, Customer Support, and Support Insights; an uncovered agent the user built remains invisible until this skill writes a case.
 
 This is the **authoring** skill. If the suite is failing and needs diagnosis, that's [`eval-and-improve`](../eval-and-improve/SKILL.md); if the agent itself needs hardening against its instructions, that's [`improve-agent`](../improve-agent/SKILL.md). Preconditions match eval-and-improve's Step 0: Postgres on 5432, venv active, `.env` populated.
 

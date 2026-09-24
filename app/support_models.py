@@ -74,7 +74,7 @@ class InsightItem(BaseModel):
 
 
 class InsightsReport(BaseModel):
-    """Administrator-only aggregate of completed support interactions."""
+    """Operator-facing aggregate of completed support interactions."""
 
     period_start: date
     period_end: date

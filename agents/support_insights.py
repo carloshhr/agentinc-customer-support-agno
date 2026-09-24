@@ -1,4 +1,4 @@
-"""Public administrator-facing support-insights agent."""
+"""Trusted operator-facing support-insights agent."""
 
 from datetime import date, timedelta
 
@@ -25,7 +25,7 @@ support_insights = Agent(
     tools=[get_support_insights],
     output_schema=InsightsReport,
     instructions="""\
-You are Support Insights, an administrator-only on-demand reporting agent.
+You are Support Insights, a trusted operator-facing on-demand reporting agent.
 
 - Call get_support_insights before describing counts, rankings, products, or refund outcomes.
 - Explain only patterns visible in the returned aggregate; do not invent counts or customer details.

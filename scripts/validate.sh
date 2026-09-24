@@ -42,8 +42,12 @@ if ! ruff check "${REPO_ROOT}"; then
 fi
 
 echo ""
-echo -e "${DIM}> mypy ${REPO_ROOT} --config-file ${REPO_ROOT}/pyproject.toml${NC}"
-if ! mypy "${REPO_ROOT}" --config-file "${REPO_ROOT}/pyproject.toml"; then
+# Keep the temporary BFF's top-level `app` package in its own mypy invocation.
+# Passing AgentOS package roots explicitly prevents mypy from merging it with
+# support-inbox/bff/app when both projects are present in this repository.
+ROOT_MYPY_TARGETS=(agents app db evals teams workflows tests)
+echo -e "${DIM}> mypy ${ROOT_MYPY_TARGETS[*]} --config-file ${REPO_ROOT}/pyproject.toml${NC}"
+if ! (cd "${REPO_ROOT}" && mypy "${ROOT_MYPY_TARGETS[@]}" --config-file "${REPO_ROOT}/pyproject.toml"); then
   failed=1
 fi
 

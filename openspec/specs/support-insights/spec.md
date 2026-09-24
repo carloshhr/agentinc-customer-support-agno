@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provide a separate administrator-facing view of persisted customer-support patterns.
+Provide a separate operator-facing view of persisted customer-support patterns.
 
 ## Requirements
 
@@ -12,7 +12,7 @@ The agent MUST produce `InsightsReport` with period bounds, total interactions, 
 
 #### Scenario: Aggregated report
 - GIVEN completed interactions within a requested period
-- WHEN an administrator requests insights
+- WHEN a trusted operator requests insights
 - THEN totals and top issues equal SQL-derived aggregates
 
 #### Scenario: Duplicate source message
@@ -20,9 +20,9 @@ The agent MUST produce `InsightsReport` with period bounds, total interactions, 
 - WHEN insights are generated
 - THEN that interaction contributes once
 
-### Requirement: Administrator-Only Reporting Boundary
+### Requirement: Operator-Facing Reporting Boundary
 
-Support insights MUST be separately registered from the customer team and MUST NOT be emitted through customer email replies. Reports MUST be on demand; scheduled reporting is out of scope.
+Support Insights MUST be separately registered as an operator-facing reporting agent and MUST NOT be emitted through customer email replies. Its access follows deployment-wide AgentOS agent-run authorization, not a component-specific administrator role. Reports MUST be on demand; scheduled reporting is out of scope.
 
 #### Scenario: Customer request
 - GIVEN a customer team invocation

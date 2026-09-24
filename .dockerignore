@@ -26,6 +26,11 @@ aienv*
 
 .ipynb_checkpoints
 
+# Local database artifacts
+*.db
+*.sqlite
+*.sqlite3
+
 # Project-specific. .claude/ and .codex/ are per-machine coding-agent state:
 # both are gitignored, but docker reads this file independently of .gitignore,
 # so a directory left off here still rides into the build context and out to the
@@ -34,6 +39,7 @@ aienv*
 tmp/
 .claude/
 .codex/
+.pi/
 
 # Node (local deploy-tooling installs — not part of the image)
 **/node_modules

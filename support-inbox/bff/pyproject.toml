@@ -1,0 +1,21 @@
+[project]
+name = "support-inbox-bff"
+version = "0.1.0"
+requires-python = ">=3.14,<4"
+dependencies = ["alembic>=1.16", "argon2-cffi>=25.1", "fastapi>=0.141", "httpx>=0.28", "psycopg[binary]>=3.2", "sqlalchemy>=2.0", "uvicorn>=0.35"]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "mypy"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.mypy]
+# This service owns a separate top-level `app` package. Run this configuration
+# from support-inbox/bff so it never shares module discovery with AgentOS.
+files = ["app", "retention.py"]
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_configs = true
+explicit_package_bases = true
+exclude = ["^\\.venv/"]
