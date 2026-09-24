@@ -32,6 +32,19 @@ For the exact walkthrough and honest capture guidance, see [the recruiter demo g
 
 ## Architecture at a glance
 
+```mermaid
+flowchart TD
+    Email[Validated customer email] --> Team[Customer Support team]
+    Team -->|Orders and tracking| Order[Order Support]
+    Team -->|Products and sizing| Product[Product Support]
+    Team -->|Returns and refunds| Refund[Returns & Refunds Support]
+    Order --> Reply[Customer-facing reply]
+    Product --> Reply
+    Refund -->|Eligible response or approval-pending state| Reply
+```
+
+The team coordinates three private specialists; the diagram shows routing, not direct customer access to those specialists. Refund approval is handled outside Support Inbox.
+
 - **Public Customer Support team:** the customer-facing team receives the conversation and selects the appropriate specialist.
 - **Private specialists:** **Order Support**, **Product Support**, and **Returns & Refunds Support** hold their focused support responsibilities behind the team.
 - **Support Inbox and BFF boundary:** the local React inbox talks to its dedicated BFF, which exposes only the customer-safe inbox operations. It is not an administrative console.
